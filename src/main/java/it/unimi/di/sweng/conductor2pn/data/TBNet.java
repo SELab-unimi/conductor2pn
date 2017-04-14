@@ -1,5 +1,9 @@
 package it.unimi.di.sweng.conductor2pn.data;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import it.unimi.di.sweng.conductor2pn.core.ConductorToPn;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -148,4 +152,19 @@ public class TBNet {
 		return r;
 	}
 
+    public void createWorker(JsonElement workerElement) {
+		JsonObject worker = workerElement.getAsJsonObject();
+		final String policy = worker.get(ConductorToPn.TIMEOUT_POLICY).getAsString();
+		switch(policy){
+            case "RETRY":
+                break;
+            case "ALERT_ONLY":
+                break;
+            case "TIME_OUT_WF":
+                break;
+        }
+    }
+
+	public void createWorkflow(JsonElement workflowElement) {
+	}
 }
