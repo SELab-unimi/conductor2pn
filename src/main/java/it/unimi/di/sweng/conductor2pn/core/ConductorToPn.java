@@ -20,6 +20,10 @@ public class ConductorToPn {
         this.model = model;
     }
 
+    public TBNet getModel() {
+        return model;
+    }
+
     public void createOutputModel(Writer out) throws IOException {
         out.write("TO DO");
         out.flush();

@@ -1,5 +1,8 @@
 package it.unimi.di.sweng.conductor2pn.core;
 
+import it.unimi.di.sweng.conductor2pn.data.NetNode;
+import it.unimi.di.sweng.conductor2pn.data.TBNet;
+import it.unimi.di.sweng.conductor2pn.data.Transition;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,6 +53,19 @@ public class ConductorToPnTest {
                 .setWorkerTasksPath("src/main/resources/worker_alert_only.json")
                 .setWorkerGenerator(new TBWorkerGenerator())
                 .build();
+
         assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(4, model.getPlaces().size());
+        assertEquals(3, model.getTransitions().size());
+        assertEquals(2, model.getStrongTransitions().size());
+        assertEquals(1, model.getWeakTransitions().size());
+
+        for(NetNode node: model.getStrongTransitions()) {
+            Transition t = (Transition)node;
+            if(t.getName().equals("encode_task_p2t"))
+                assertEquals("enab+1200", t.getMaxTime());
+        }
     }
 }
