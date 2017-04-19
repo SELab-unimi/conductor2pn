@@ -68,4 +68,18 @@ public class ConductorToPnTest {
                 assertEquals("enab+1200", t.getMaxTime());
         }
     }
+
+    @Test
+    public void workerTimeoutWorkflowTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/worker_timeout_wf.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(9, model.getPlaces().size());
+        assertEquals(8, model.getTransitions().size());
+    }
 }

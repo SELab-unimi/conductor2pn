@@ -55,4 +55,12 @@ public abstract class WorkerGenerator {
         return workerName + "_p2t"; // progress to timeout
     }
 
+    protected String p2aTransitionName(String workerName) {
+        return workerName + "_p2a"; // progress to abort
+    }
+
+    protected String s2aTransitionName(String workerName) {
+        return workerName + "_s2a"; // schedule to abort
+    }
+
 }
