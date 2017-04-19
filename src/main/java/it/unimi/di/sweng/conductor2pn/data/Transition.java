@@ -4,59 +4,66 @@ package it.unimi.di.sweng.conductor2pn.data;
 public class Transition extends NetNode {
 	
 	private static final long serialVersionUID = 8268411914590072821L;
-	
-	private String staticMinTime="enab";
-	private String staticMaxTime="enab";
-	private boolean weak=false;
+	public static final String ENAB = "enab";
+	public static final String INF = "enab + " + Integer.MAX_VALUE;
+
+	private String minTime = ENAB;
+	private String maxTime = ENAB;
+	private boolean weak = false;
 	
 	public Transition(){
-		
+
 	}
+
 	public Transition(String name){
 		super(name);
 	}
+
 	public Transition(String name, String tmin, String tmax){
 		super(name);
-		this.staticMinTime=tmin;
-		this.staticMaxTime=tmax;
+		this.minTime =tmin;
+		this.maxTime =tmax;
 	}
+
 	public Transition(String name, String tmin, String tmax, boolean wk){
 		super(name);
-		this.staticMinTime=tmin;
-		this.staticMaxTime=tmax;
-		this.weak=wk;
+		this.minTime = tmin;
+		this.maxTime = tmax;
+		this.weak = wk;
 	}
 	
 	public String getMinTime(){
-		return this.staticMinTime;
+		return this.minTime;
 	}
 	public String getMaxTime(){
-		return this.staticMaxTime;
+		return this.maxTime;
 	}
 	public void putMinTime(String tmin){
-		this.staticMinTime=tmin;
+		this.minTime = tmin;
 	}
 	public void putMaxTime(String tmax){
-		this.staticMaxTime=tmax;
+		this.maxTime = tmax;
 	}
 	public boolean isWeak(){
 		return this.weak;
 	}
 	public void setWeak(boolean wk){
-		this.weak=wk;
+		this.weak = wk;
 	}
+
 	public boolean equals(Object o){
 		if(!(o.getClass().isInstance(this)))
 			return false;
 		else{
 			Transition t=(Transition)o;
-			return this.name.equals(t.name) && this.weak==t.weak && this.staticMinTime.equals(t.staticMinTime) &&
-				this.staticMaxTime.equals(t.staticMaxTime);
+			return this.name.equals(t.name) && this.weak==t.weak && this.minTime.equals(t.minTime) &&
+				this.maxTime.equals(t.maxTime);
 		}
 	}
+
 	public String toString(){
-		return "Transition "+this.getName()+": tmin="+this.staticMinTime
-			+", tmax="+this.staticMaxTime+", semantic="+(this.weak ? "WEAK" : "STRONG");
+		return "Transition "+this.getName()+": tmin="+this.minTime
+			+", tmax="+this.maxTime +", semantic="+(this.weak ? "WEAK" : "STRONG");
 	}
 	
 }

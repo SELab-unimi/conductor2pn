@@ -11,6 +11,8 @@ import java.io.*;
 public class ConductorToPn {
 
     public static final String TIMEOUT_POLICY = "timeoutPolicy";
+    public static final String TIMEOUT_MSEC = "timeoutSeconds";
+    public static final String WORKER_NAME = "name";
 
     private TBNet model = null;
 
@@ -28,6 +30,7 @@ public class ConductorToPn {
 
         private String inputWorkflowPath = null;
         private String inputWorkerTasksPath = null;
+        private WorkerGenerator generatorStrategy = null;
 
         public ConductorToPnBuilder setWorkflowPath(String path) {
             this.inputWorkflowPath = path;
@@ -39,8 +42,13 @@ public class ConductorToPn {
             return this;
         }
 
+        public ConductorToPnBuilder setWorkerGenerator(WorkerGenerator generator) {
+            this.generatorStrategy = generator;
+            return this;
+        }
+
         public ConductorToPn build() {
-            if(inputWorkerTasksPath == null)
+            if(inputWorkerTasksPath == null || generatorStrategy == null)
                 return null;
             JsonArray workers = null;
             try {
@@ -51,9 +59,9 @@ public class ConductorToPn {
                 return null;
             }
 
-            TBNet workflowModel = new TBNet();
+            TBNet model = new TBNet();
             for(JsonElement w: workers)
-                workflowModel.createWorker(w);
+                generatorStrategy.createWorker(w, model);
 
             if(inputWorkflowPath != null) {
                 JsonObject workflow = null;
@@ -62,13 +70,13 @@ public class ConductorToPn {
                             .parse(new FileReader(new File(inputWorkflowPath)))
                             .getAsJsonObject();
 
-                    workflowModel.createWorkflow(workflow);
+                    model.createWorkflow(workflow);
                 } catch (FileNotFoundException e) {
                     return null;
                 }
             }
 
-            return new ConductorToPn(workflowModel);
+            return new ConductorToPn(model);
         }
     }
 }

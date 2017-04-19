@@ -1,5 +1,6 @@
 package it.unimi.di.sweng.conductor2pn.core;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -23,15 +24,17 @@ public class ConductorToPnTest {
     public void ConductorToPnBuilderTest() {
         ConductorToPn conductor2PnEngine = new ConductorToPnBuilder()
                 .setWorkflowPath("src/main/resources/kitchensink.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
                 .build();
         assertNull(conductor2PnEngine);
     }
 
-    @Test
+    @Test@Ignore
     public void outputTest() {
         ConductorToPn conductor2PnEngine = new ConductorToPnBuilder()
                 .setWorkerTasksPath("src/main/resources/worker_timeout_wf.json")
                 .setWorkflowPath("src/main/resources/kitchensink.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
                 .build();
         try {
             conductor2PnEngine.createOutputModel(new OutputStreamWriter(System.out));
@@ -42,9 +45,10 @@ public class ConductorToPnTest {
     }
 
     @Test
-    public void workerTimeoutWFTaskTest() {
+    public void workerAlertOnlyTest() {
         ConductorToPn conductor2PnEngine = new ConductorToPnBuilder()
-                .setWorkerTasksPath("src/main/resources/worker_timeout_wf.json")
+                .setWorkerTasksPath("src/main/resources/worker_alert_only.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
                 .build();
         assertNotNull(conductor2PnEngine);
     }

@@ -1,0 +1,16 @@
+[{
+  "name": "encode_task",
+  "retryCount": 3,
+  "timeoutSeconds": 1200,
+  "inputKeys": [
+    "sourceRequestId",
+    "qcElementType"
+  ],
+  "outputKeys": [
+    "state",
+    "skipped",
+    "result"
+  ],
+  "timeoutPolicy": "ALERT_ONLY",
+  "responseTimeoutSeconds": 3600
+}]

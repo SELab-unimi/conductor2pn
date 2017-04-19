@@ -5,33 +5,33 @@ public class Token extends NetElement{
 	
 	private static final long serialVersionUID = -5458220992365236256L;
 	
-	protected String symTime;
+	protected String symbolicTimestamp;
 	
 	public Token(){
-		this.symTime="T0";
+		this.symbolicTimestamp = "T0";
 	}
 	public Token(String st){
-		this.symTime=st;
+		this.symbolicTimestamp = st;
 	}
 	public Token(Token t){
-		this.symTime=t.symTime;
+		this.symbolicTimestamp = t.symbolicTimestamp;
 	}
 	
 	public String getSymbolicTime(){
-		return this.symTime;
+		return this.symbolicTimestamp;
 	}
 	public void putSymbolicTime(String st){
-		this.symTime=st;
+		this.symbolicTimestamp = st;
 	}
 	
 	public boolean equals(Object obj){
 		if(!(obj.getClass().isInstance(this)))
 			return false;
 		else
-			return this.symTime.equals(((Token)obj).symTime);
+			return this.symbolicTimestamp.equals(((Token)obj).symbolicTimestamp);
 	}
 	
 	public String toString(){
-		return this.symTime;
+		return this.symbolicTimestamp;
 	}
 }

@@ -17,7 +17,6 @@ public class Place extends NetNode{
 	}
 	public Place(Place pl){
 		super(pl.name);
-		this.id=pl.id;
 		this.tokens=new ArrayList<Token>();
 		this.tokens.addAll(pl.tokens);
 	}
@@ -33,8 +32,7 @@ public class Place extends NetNode{
 	public void removeAllTokens(){
 		this.tokens.clear();
 	}
-	
-	// return true if names are equals
+
 	public boolean equals(Object obj){
 		if(!(obj.getClass().isInstance(this)))
 			return false;
