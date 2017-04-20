@@ -48,14 +48,18 @@ public class TBWorkerGenerator extends WorkerGenerator{
 
         final String retryLogic = JsonWorker.get(RETRY_LOGIC).getAsString();
         final int retryDelaySec = JsonWorker.get(RETRY_DELAY_SECONDS).getAsInt();
-        String tmax = Transition.ENAB;
-        if(retryLogic.equals(FIXED))
-            tmax +=  "+" + retryDelaySec;
-        else if(retryLogic.equals(EXPONENTIAL_BACKOFF))
-            tmax +=  "+" + retryDelaySec + " * (" + retryCount + " - #(" + retryCountPlace.getName() + "))";
+        String maxTime = Transition.ENAB;
+        switch(retryLogic) {
+            case FIXED:
+                maxTime +=  "+" + retryDelaySec;
+                break;
+            case EXPONENTIAL_BACKOFF:
+                maxTime +=  "+" + retryDelaySec + " * (" + retryCount + " - #(" + retryCountPlace.getName() + "))";
+                break;
+        }
 
         Transition timeoutAndRetryToProgress = new Transition(tr2pTransitionName(workerName),
-                Transition.ENAB, tmax,false);
+                Transition.ENAB, maxTime,false);
 
         net.addNode(retryCountPlace);
         net.addNode(timeoutAndRetryToProgress);
