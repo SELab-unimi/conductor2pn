@@ -10,10 +10,6 @@ import java.io.*;
 
 public class ConductorToPn {
 
-    public static final String TIMEOUT_POLICY = "timeoutPolicy";
-    public static final String TIMEOUT_MSEC = "timeoutSeconds";
-    public static final String WORKER_NAME = "name";
-
     private TBNet model = null;
 
     private ConductorToPn(TBNet model){

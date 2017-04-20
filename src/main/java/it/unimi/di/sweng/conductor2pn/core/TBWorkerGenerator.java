@@ -20,17 +20,17 @@ public class TBWorkerGenerator extends WorkerGenerator{
     @Override
     protected void createWorkflowTimeoutWorker(JsonElement workerElement, TBNet net) {
         globalTimeout = true;
-        workerAbortedPlace = new Place("worker_aborted");
+        workerAbortedPlace = new Place(WORKER_ABORTED);
         net.addNode(workerAbortedPlace);
         JsonObject JsonWorker = workerElement.getAsJsonObject();
         basicLifecycle(JsonWorker, net, true);
 
-        final String timeoutWorkerName = JsonWorker.get(ConductorToPn.WORKER_NAME).getAsString();
+        final String timeoutWorkerName = JsonWorker.get(WORKER_NAME).getAsString();
         for(NetNode node: net.getPlaces()) {
             Place place = (Place) node;
             if(!place.getName().startsWith(timeoutWorkerName) &&
-                    (place.getName().endsWith("_schedule") || place.getName().endsWith("_progress")))
-                connectGlobalTimeout(place, net);
+                    (place.getName().endsWith(SCHEDULE) || place.getName().endsWith(PROGRESS)))
+                connectToGlobalTimeout(place, net);
         }
     }
 
@@ -38,11 +38,36 @@ public class TBWorkerGenerator extends WorkerGenerator{
     protected void createRetryWorker(JsonElement workerElement, TBNet net) {
         JsonObject JsonWorker = workerElement.getAsJsonObject();
         basicLifecycle(JsonWorker, net, false);
+
+        final String workerName = JsonWorker.get(WORKER_NAME).getAsString();
+        final int retryCount = JsonWorker.get(RETRY_COUNT).getAsInt();
+
+        Place timeoutPlace = net.getPlace(timeoutPlaceName(workerName));
+        Place retryCountPlace = new Place(retryCountPlaceName(workerName));
+        retryCountPlace.putTokens(retryCount, "TA");
+
+        final String retryLogic = JsonWorker.get(RETRY_LOGIC).getAsString();
+        final int retryDelaySec = JsonWorker.get(RETRY_DELAY_SECONDS).getAsInt();
+        String tmax = Transition.ENAB;
+        if(retryLogic.equals(FIXED))
+            tmax +=  "+" + retryDelaySec;
+        else if(retryLogic.equals(EXPONENTIAL_BACKOFF))
+            tmax +=  "+" + retryDelaySec + " * (" + retryCount + " - #(" + retryCountPlace.getName() + "))";
+
+        Transition timeoutAndRetryToProgress = new Transition(tr2pTransitionName(workerName),
+                Transition.ENAB, tmax,false);
+
+        net.addNode(retryCountPlace);
+        net.addNode(timeoutAndRetryToProgress);
+
+        net.addArc(new Arc(timeoutPlace, timeoutAndRetryToProgress));
+        net.addArc(new Arc(retryCountPlace, timeoutAndRetryToProgress));
+        net.addArc(new Arc(timeoutAndRetryToProgress, net.getPlace(progressPlaceName(workerName))));
     }
 
     private void basicLifecycle(JsonObject JsonWorker, TBNet net, boolean timeoutWorkflowWorker) {
-        final String workerName = JsonWorker.get(ConductorToPn.WORKER_NAME).getAsString();
-        final Integer timeoutMSec = JsonWorker.get(ConductorToPn.TIMEOUT_MSEC).getAsInt();
+        final String workerName = JsonWorker.get(WORKER_NAME).getAsString();
+        final Integer timeoutMSec = JsonWorker.get(TIMEOUT_MSEC).getAsInt();
 
         Place schedule = new Place(schedulePlaceName(workerName));
         Place progress = new Place(progressPlaceName(workerName));
@@ -75,14 +100,19 @@ public class TBWorkerGenerator extends WorkerGenerator{
         net.addArc(new Arc(progressToTimeout, timeout));
 
         if(globalTimeout && !timeoutWorkflowWorker) {
-            connectGlobalTimeout(schedule, net);
-            connectGlobalTimeout(progress, net);
+            connectToGlobalTimeout(schedule, net);
+            connectToGlobalTimeout(progress, net);
         }
     }
 
-    private void connectGlobalTimeout(Place place, TBNet net) {
-        Transition placeToAbort = new Transition(s2aTransitionName(workerNameFromPlace(place)),
+    private void connectToGlobalTimeout(Place place, TBNet net) {
+        String transitionName = s2aTransitionName(workerNameFromPlace(place));
+        if(place.getName().endsWith(PROGRESS))
+            transitionName = p2aTransitionName(workerNameFromPlace(place));
+
+        Transition placeToAbort = new Transition(transitionName,
                 Transition.ENAB, Transition.ENAB + "+Y",false);
+
         net.addNode(placeToAbort);
         net.addArc(new Arc(globalTimeoutPlace, placeToAbort));
         net.addArc(new Arc(placeToAbort, globalTimeoutPlace));

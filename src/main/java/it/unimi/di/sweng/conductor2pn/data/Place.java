@@ -33,6 +33,11 @@ public class Place extends NetNode{
 		this.tokens.clear();
 	}
 
+	public void putTokens(int n, String symbolicTimestamp) {
+		for(int i=0; i<n; i++)
+		    putToken(new Token(symbolicTimestamp));
+	}
+
 	public boolean equals(Object obj){
 		if(!(obj.getClass().isInstance(this)))
 			return false;

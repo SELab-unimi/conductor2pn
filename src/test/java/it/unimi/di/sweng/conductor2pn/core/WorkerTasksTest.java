@@ -1,6 +1,6 @@
 package it.unimi.di.sweng.conductor2pn.core;
 
-import it.unimi.di.sweng.conductor2pn.data.NetNode;
+import it.unimi.di.sweng.conductor2pn.data.Place;
 import it.unimi.di.sweng.conductor2pn.data.TBNet;
 import it.unimi.di.sweng.conductor2pn.data.Transition;
 import org.junit.Ignore;
@@ -15,7 +15,7 @@ import org.junit.rules.Timeout;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class ConductorToPnTest {
+public class WorkerTasksTest {
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(2);
@@ -62,11 +62,9 @@ public class ConductorToPnTest {
         assertEquals(2, model.getStrongTransitions().size());
         assertEquals(1, model.getWeakTransitions().size());
 
-        for(NetNode node: model.getStrongTransitions()) {
-            Transition t = (Transition)node;
-            if(t.getName().equals("encode_task_p2t"))
-                assertEquals("enab+1200", t.getMaxTime());
-        }
+        Transition t = model.getTransition("encode_task_p2t");
+        assertNotNull(t);
+        assertEquals("enab+1200", t.getMaxTime());
     }
 
     @Test
@@ -81,5 +79,49 @@ public class ConductorToPnTest {
 
         assertEquals(9, model.getPlaces().size());
         assertEquals(8, model.getTransitions().size());
+    }
+
+    @Test
+    public void workerRetryFixedTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/worker_retry_fixed.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(5, model.getPlaces().size());
+        assertEquals(4, model.getTransitions().size());
+
+        Place retryCountPlace = model.getPlace("encode_task_retrycount");
+        assertNotNull(retryCountPlace);
+        assertEquals(3, retryCountPlace.getTokens().size());
+
+        Transition tr2p = model.getTransition("encode_task_tr2p");
+        assertNotNull(tr2p);
+        assertEquals("enab+600", tr2p.getMaxTime());
+    }
+
+    @Test
+    public void workerRetryExponentialBackoffTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/worker_retry_exponential_backoff.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(5, model.getPlaces().size());
+        assertEquals(4, model.getTransitions().size());
+
+        Place retryCountPlace = model.getPlace("encode_task_retrycount");
+        assertNotNull(retryCountPlace);
+        assertEquals(3, retryCountPlace.getTokens().size());
+
+        Transition tr2p = model.getTransition("encode_task_tr2p");
+        assertNotNull(tr2p);
+        assertEquals("enab+600 * (3 - #(encode_task_retrycount))", tr2p.getMaxTime());
     }
 }

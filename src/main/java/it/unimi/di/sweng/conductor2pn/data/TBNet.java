@@ -140,4 +140,19 @@ public class TBNet {
 
 	public void createWorkflow(JsonElement workflowElement) {
 	}
+
+	public Place getPlace(String name) {
+		for(Place p: getPlaces())
+			if(p.getName().equals(name))
+				return p;
+		return null;
+	}
+
+    public Transition getTransition(String name) {
+        for(Transition t: getTransitions())
+            if(t.getName().equals(name))
+                return t;
+        return null;
+    }
+
 }
