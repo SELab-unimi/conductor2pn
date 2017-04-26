@@ -52,47 +52,47 @@ public abstract class WorkerGenerator {
     protected abstract void createWorkflowTimeoutWorker(JsonElement element, TBNet net);
     protected abstract void createRetryWorker(JsonElement element, TBNet net);
 
-    protected String schedulePlaceName(String workerName) {
+    protected static String schedulePlaceName(String workerName) {
         return workerName + SCHEDULE;
     }
 
-    protected String progressPlaceName(String workerName) {
+    protected static String progressPlaceName(String workerName) {
         return workerName + PROGRESS;
     }
 
-    protected String completePlaceName(String workerName) {
+    protected static String completePlaceName(String workerName) {
         return workerName + COMPLETE;
     }
 
-    protected String timeoutPlaceName(String workerName) {
+    protected static String timeoutPlaceName(String workerName) {
         return workerName + TIMEOUT;
     }
 
-    protected String retryCountPlaceName(String workerName) {
+    protected static String retryCountPlaceName(String workerName) {
         return workerName + RETRYCOUNT;
     }
 
-    protected String s2pTransitionName(String workerName) {
+    protected static String s2pTransitionName(String workerName) {
         return workerName + SCHEDULE_TO_PROGRESS;
     }
 
-    protected String p2cTransitionName(String workerName) {
+    protected static String p2cTransitionName(String workerName) {
         return workerName + PROGRESS_TO_COMPLETE;
     }
 
-    protected String p2tTransitionName(String workerName) {
+    protected static String p2tTransitionName(String workerName) {
         return workerName + PROGRESS_TO_TIMEOUT;
     }
 
-    protected String p2aTransitionName(String workerName) {
+    protected static String p2aTransitionName(String workerName) {
         return workerName + PROGRESS_TO_ABORT;
     }
 
-    protected String s2aTransitionName(String workerName) {
+    protected static String s2aTransitionName(String workerName) {
         return workerName + SCHEDULE_TO_ABORT;
     }
 
-    protected String tr2pTransitionName(String workerName) {
+    protected static String tr2pTransitionName(String workerName) {
         return workerName + TIMEOUT_RETRY_TO_PROGRESS;
     }
 }

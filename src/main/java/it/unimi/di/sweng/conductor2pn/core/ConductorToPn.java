@@ -30,7 +30,8 @@ public class ConductorToPn {
 
         private String inputWorkflowPath = null;
         private String inputWorkerTasksPath = null;
-        private WorkerGenerator generatorStrategy = null;
+        private WorkerGenerator workerStrategy = null;
+        private WorkflowGenerator workflowStrategy = null;
 
         public ConductorToPnBuilder setWorkflowPath(String path) {
             this.inputWorkflowPath = path;
@@ -42,13 +43,18 @@ public class ConductorToPn {
             return this;
         }
 
-        public ConductorToPnBuilder setWorkerGenerator(WorkerGenerator generator) {
-            this.generatorStrategy = generator;
+        public ConductorToPnBuilder setWorkerGenerator(WorkerGenerator workerGenerator) {
+            this.workerStrategy = workerGenerator;
+            return this;
+        }
+
+        public ConductorToPnBuilder setWorkflowGenerator(WorkflowGenerator workflowGenerator) {
+            this.workflowStrategy = workflowGenerator;
             return this;
         }
 
         public ConductorToPn build() {
-            if(inputWorkerTasksPath == null || generatorStrategy == null)
+            if(inputWorkerTasksPath == null || workerStrategy == null)
                 return null;
             JsonArray workers = null;
             try {
@@ -61,7 +67,7 @@ public class ConductorToPn {
 
             TBNet model = new TBNet();
             for(JsonElement w: workers)
-                generatorStrategy.createWorker(w, model);
+                workerStrategy.createWorker(w, model);
 
             if(inputWorkflowPath != null) {
                 JsonObject workflow = null;
@@ -70,7 +76,7 @@ public class ConductorToPn {
                             .parse(new FileReader(new File(inputWorkflowPath)))
                             .getAsJsonObject();
 
-                    model.createWorkflow(workflow);
+                    workflowStrategy.createWorkflow(workflow, model);
                 } catch (FileNotFoundException e) {
                     return null;
                 }
