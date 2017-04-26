@@ -34,13 +34,13 @@ public abstract class WorkflowGenerator {
                 case "EVENT":
                     outputTask = eventTask(inputTask, currentElement, net);
                     break;
+                case "FORK_JOIN":
+                    outputTask = forkTask(inputTask, currentElement, net);
+                    break;
                 case "DYNAMIC":
                     //createWorkflowTimeoutWorker(workerElement, net);
                     break;
                 case "DECISION":
-                    //createWorkflowTimeoutWorker(workerElement, net);
-                    break;
-                case "FORK_JOIN":
                     //createWorkflowTimeoutWorker(workerElement, net);
                     break;
                 case "FORK_JOIN_DYNAMIC":
@@ -63,6 +63,10 @@ public abstract class WorkflowGenerator {
     protected abstract String simpleTask(String inputTask, JsonElement workerElement, TBNet net);
 
     protected abstract String eventTask(String inputTask, JsonElement workerElement, TBNet net);
+
+    protected String forkTask(String inputTask, JsonElement workerElement, TBNet net) {
+        return null;
+    }
 
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
