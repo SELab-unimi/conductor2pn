@@ -55,4 +55,23 @@ public class WorkflowGeneratorTest {
         assertNotNull(model.getPlace("event_0_generated"));
         assertNotNull(model.getPlace("event_0_to_be_handled"));
     }
+
+    @Test
+    public void forkJoinTaskWorkflowTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/workers_mix_2.json")
+                .setWorkflowPath("src/main/resources/workflow_fork_join.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .setWorkflowGenerator(new TBWorkflowGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(17, model.getPlaces().size());
+        assertEquals(16, model.getTransitions().size());
+
+        assertNotNull(model.getTransition("fork_join_fork"));
+        assertNotNull(model.getTransition("join_join"));
+    }
 }

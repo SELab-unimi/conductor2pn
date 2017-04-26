@@ -1,0 +1,56 @@
+{
+  "name": "workflow_fork_join",
+  "description": "workflow with two simple tasks",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "task_0",
+      "taskReferenceName": "task_0",
+      "inputParameters": {
+        "mod": "${task_0.output.mod}",
+        "oddEven": "${task_0.output.oddEven}"
+      },
+      "type": "SIMPLE"
+    },
+    {
+      "name": "fork_join",
+      "taskReferenceName": "forkx",
+      "type": "FORK_JOIN",
+      "forkTasks": [
+        [
+          {
+            "name": "task_1",
+            "taskReferenceName": "task_1",
+            "type": "SIMPLE"
+          },
+          {
+            "name": "task_2",
+            "taskReferenceName": "task_2",
+            "type": "SIMPLE"
+          }
+        ],
+        [
+          {
+            "name": "task_3",
+            "taskReferenceName": "task_3",
+            "type": "SIMPLE"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "join",
+      "taskReferenceName": "join2",
+      "type": "JOIN",
+      "joinOn": [
+        "task_2",
+        "task_3"
+      ]
+    }
+  ],
+  "outputParameters": {
+    "statues": "${get_es_1.output..status}",
+    "workflowIds": "${get_es_1.output..workflowId}"
+  },
+  "schemaVersion": 1
+}

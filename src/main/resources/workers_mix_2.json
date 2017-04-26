@@ -1,0 +1,63 @@
+[{
+  "name": "task_0",
+  "timeoutSeconds": 1200,
+  "inputKeys": [
+    "sourceRequestId",
+    "qcElementType"
+  ],
+  "outputKeys": [
+    "state",
+    "skipped",
+    "result"
+  ],
+  "timeoutPolicy": "ALERT_ONLY",
+  "responseTimeoutSeconds": 3600
+},
+  {
+  "name": "task_1",
+  "retryCount": 3,
+  "timeoutSeconds": 1200,
+  "inputKeys": [
+    "sourceRequestId",
+    "qcElementType"
+  ],
+  "outputKeys": [
+    "state",
+    "skipped",
+    "result"
+  ],
+  "timeoutPolicy": "RETRY",
+  "retryLogic": "FIXED",
+  "retryDelaySeconds": 600,
+  "responseTimeoutSeconds": 3600
+},
+  {
+    "name": "task_2",
+    "timeoutSeconds": 1200,
+    "inputKeys": [
+      "sourceRequestId",
+      "qcElementType"
+    ],
+    "outputKeys": [
+      "state",
+      "skipped",
+      "result"
+    ],
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 3600
+  },
+  {
+    "name": "task_3",
+    "timeoutSeconds": 1200,
+    "inputKeys": [
+      "sourceRequestId",
+      "qcElementType"
+    ],
+    "outputKeys": [
+      "state",
+      "skipped",
+      "result"
+    ],
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 3600
+  }]

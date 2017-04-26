@@ -14,13 +14,14 @@ public abstract class WorkflowGenerator {
     protected static final String TASKS = "tasks";
     protected static final String NAME = "name";
     protected static final String FORK_TASKS = "forkTasks";
-    protected static final String JOIN = "_join";
 
     // PN elements naming
     protected static final String START_TASK = "start_";
     protected static final String START_EVENT = "_generation";
     protected static final String EVENT_GENERATED = "_generated";
     protected static final String EVENT_TO_BE_HANDLED = "_to_be_handled";
+    protected static final String FORK = "_fork";
+    protected static final String JOIN = "_join";
 
     public void createWorkflow(JsonElement workflowElement, TBNet net) {
         createWorkflow(new ArrayList<>(), workflowElement.getAsJsonObject().get(TASKS), net);
@@ -38,14 +39,10 @@ public abstract class WorkflowGenerator {
                 case "EVENT":
                     outputTasks = eventTask(inputElements, currentElement, net);
                     break;
-                case "FORK":
+                case "FORK_JOIN":
                     outputTasks = forkTask(inputElements, currentElement, net);
                     break;
                 case "JOIN":
-                    outputTasks = joinTask(outputTasks, currentElement, net);
-                    break;
-                case "FORK_JOIN":
-                    outputTasks = forkTask(inputElements, currentElement, net);
                     outputTasks = joinTask(outputTasks, currentElement, net);
                     break;
                 case "DYNAMIC":
@@ -77,13 +74,7 @@ public abstract class WorkflowGenerator {
 
     protected abstract List<String> joinTask(List<String> outputTasks, JsonElement workerElement, TBNet net);
 
-    private List<String> forkTask(List<String> inputElements, JsonElement workflowElement, TBNet net) {
-        JsonArray forkTasks = workflowElement.getAsJsonObject().get(FORK_TASKS).getAsJsonArray();
-        List<String> result = new ArrayList<>();
-        for(JsonElement element: forkTasks)
-            result.addAll(createWorkflow(inputElements, element, net));
-        return result;
-    }
+    protected abstract List<String> forkTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
@@ -99,6 +90,10 @@ public abstract class WorkflowGenerator {
 
     protected static String eventToBeHandledName(String workerName) {
         return workerName + EVENT_TO_BE_HANDLED;
+    }
+
+    protected static String forkTransitionName(String workerName) {
+        return workerName + FORK;
     }
 
     protected static String joinTransitionName(String workerName) {

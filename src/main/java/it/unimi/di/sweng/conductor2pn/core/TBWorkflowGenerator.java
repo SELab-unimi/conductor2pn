@@ -1,5 +1,6 @@
 package it.unimi.di.sweng.conductor2pn.core;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import it.unimi.di.sweng.conductor2pn.data.*;
 
@@ -81,6 +82,35 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
 
         List<String> result = new ArrayList<>();
         result.add(eventGeneratedPlace.getName());
+        return result;
+    }
+
+    @Override
+    protected List<String> forkTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
+        String forkName = currentElement.getAsJsonObject().get(NAME).getAsString();
+        JsonArray forkTasks = currentElement.getAsJsonObject().get(FORK_TASKS).getAsJsonArray();
+        List<Place> inputPlaces = new ArrayList<>();
+        for(String element: inputElements) {
+            Place p = net.getPlace(element);
+            if(p != null)
+                inputPlaces.add(p);
+        }
+
+        if(inputPlaces.isEmpty())
+            throw new IllegalArgumentException();
+
+        Transition forkTransition = new Transition(forkTransitionName(forkName),
+                Transition.ENAB, Transition.ENAB + "+J",false);
+        net.addNode(forkTransition);
+        for(Place inputPlace: inputPlaces) {
+            net.addArc(new Arc(inputPlace, forkTransition));
+        }
+        inputElements = new ArrayList<>();
+        inputElements.add(forkTransition.getName());
+
+        List<String> result = new ArrayList<>();
+        for(JsonElement element: forkTasks)
+            result.addAll(createWorkflow(inputElements, element, net));
         return result;
     }
 
