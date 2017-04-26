@@ -2,8 +2,10 @@ package it.unimi.di.sweng.conductor2pn.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import it.unimi.di.sweng.conductor2pn.data.TBNet;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class WorkflowGenerator {
 
@@ -11,6 +13,8 @@ public abstract class WorkflowGenerator {
     protected static final String TYPE = "type";
     protected static final String TASKS = "tasks";
     protected static final String NAME = "name";
+    protected static final String FORK_TASKS = "forkTasks";
+    protected static final String JOIN = "_join";
 
     // PN elements naming
     protected static final String START_TASK = "start_";
@@ -19,23 +23,30 @@ public abstract class WorkflowGenerator {
     protected static final String EVENT_TO_BE_HANDLED = "_to_be_handled";
 
     public void createWorkflow(JsonElement workflowElement, TBNet net) {
-        createWorkflow(null, workflowElement.getAsJsonObject().get(TASKS), net);
+        createWorkflow(new ArrayList<>(), workflowElement.getAsJsonObject().get(TASKS), net);
     }
 
-    protected String createWorkflow(String inputTask, JsonElement workflowElement, TBNet net) {
-        String outputTask = null;
+    protected List<String> createWorkflow(List<String> inputElements, JsonElement workflowElement, TBNet net) {
+        List<String> outputTasks = null;
         JsonArray JsonWorkflow = workflowElement.getAsJsonArray();
         for(JsonElement currentElement: JsonWorkflow) {
             final String type = currentElement.getAsJsonObject().get(TYPE).getAsString();
             switch(type){
                 case "SIMPLE":
-                    outputTask = simpleTask(inputTask, currentElement, net);
+                    outputTasks = simpleTask(inputElements, currentElement, net);
                     break;
                 case "EVENT":
-                    outputTask = eventTask(inputTask, currentElement, net);
+                    outputTasks = eventTask(inputElements, currentElement, net);
+                    break;
+                case "FORK":
+                    outputTasks = forkTask(inputElements, currentElement, net);
+                    break;
+                case "JOIN":
+                    outputTasks = joinTask(outputTasks, currentElement, net);
                     break;
                 case "FORK_JOIN":
-                    outputTask = forkTask(inputTask, currentElement, net);
+                    outputTasks = forkTask(inputElements, currentElement, net);
+                    outputTasks = joinTask(outputTasks, currentElement, net);
                     break;
                 case "DYNAMIC":
                     //createWorkflowTimeoutWorker(workerElement, net);
@@ -55,17 +66,23 @@ public abstract class WorkflowGenerator {
                 default:
                     throw new IllegalArgumentException();
             }
-            inputTask = outputTask;
+            inputElements = outputTasks;
         }
-        return outputTask;
+        return outputTasks;
     }
 
-    protected abstract String simpleTask(String inputTask, JsonElement workerElement, TBNet net);
+    protected abstract List<String> simpleTask(List<String> inputElements, JsonElement workerElement, TBNet net);
 
-    protected abstract String eventTask(String inputTask, JsonElement workerElement, TBNet net);
+    protected abstract List<String> eventTask(List<String> inputElements, JsonElement workerElement, TBNet net);
 
-    protected String forkTask(String inputTask, JsonElement workerElement, TBNet net) {
-        return null;
+    protected abstract List<String> joinTask(List<String> outputTasks, JsonElement workerElement, TBNet net);
+
+    private List<String> forkTask(List<String> inputElements, JsonElement workflowElement, TBNet net) {
+        JsonArray forkTasks = workflowElement.getAsJsonObject().get(FORK_TASKS).getAsJsonArray();
+        List<String> result = new ArrayList<>();
+        for(JsonElement element: forkTasks)
+            result.addAll(createWorkflow(inputElements, element, net));
+        return result;
     }
 
     protected static String startTaskTransitionName(String workerName) {
@@ -82,6 +99,10 @@ public abstract class WorkflowGenerator {
 
     protected static String eventToBeHandledName(String workerName) {
         return workerName + EVENT_TO_BE_HANDLED;
+    }
+
+    protected static String joinTransitionName(String workerName) {
+        return workerName + JOIN;
     }
 
 }
