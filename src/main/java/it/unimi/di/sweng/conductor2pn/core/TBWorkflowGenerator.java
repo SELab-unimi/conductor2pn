@@ -27,4 +27,20 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
 
         return WorkerGenerator.completePlaceName(workerName);
     }
+
+    @Override
+    protected String eventTask(String inputTask, JsonElement workerElement, TBNet net) {
+        String eventName = workerElement.getAsJsonObject().get(NAME).getAsString();
+        Place inputPlace = net.getPlace(inputTask);
+        Transition startEventTransition = new Transition(startEventTransitionName(eventName),
+                Transition.ENAB, Transition.ENAB + "+E",false);
+        Place eventGeneratedPlace = new Place(eventPlaceName(eventName));
+        Place eventToBeHandledPlace = new Place(eventToBeHandledName(eventName));
+        net.addNode(eventGeneratedPlace);
+        net.addNode(startEventTransition);
+        net.addNode(eventToBeHandledPlace);
+        net.addArc(new Arc(inputPlace, startEventTransition));
+        net.addArc(new Arc(inputPlace, eventToBeHandledPlace));
+        return eventGeneratedPlace.getName();
+    }
 }

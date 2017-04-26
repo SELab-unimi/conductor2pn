@@ -14,6 +14,9 @@ public abstract class WorkflowGenerator {
 
     // PN elements naming
     protected static final String START_TASK = "start_";
+    protected static final String START_EVENT = "_generation";
+    protected static final String EVENT_GENERATED = "_generated";
+    protected static final String EVENT_TO_BE_HANDLED = "_to_be_handled";
 
     public void createWorkflow(JsonElement workflowElement, TBNet net) {
         createWorkflow(null, workflowElement.getAsJsonObject().get(TASKS), net);
@@ -29,7 +32,7 @@ public abstract class WorkflowGenerator {
                     outputTask = simpleTask(inputTask, currentElement, net);
                     break;
                 case "EVENT":
-                    //createAlertOnlyWorker(workerElement, net);
+                    outputTask = eventTask(inputTask, currentElement, net);
                     break;
                 case "DYNAMIC":
                     //createWorkflowTimeoutWorker(workerElement, net);
@@ -59,7 +62,22 @@ public abstract class WorkflowGenerator {
 
     protected abstract String simpleTask(String inputTask, JsonElement workerElement, TBNet net);
 
+    protected abstract String eventTask(String inputTask, JsonElement workerElement, TBNet net);
+
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
     }
+
+    protected static String startEventTransitionName(String workerName) {
+        return workerName + START_EVENT;
+    }
+
+    protected static String eventPlaceName(String workerName) {
+        return workerName + EVENT_GENERATED;
+    }
+
+    protected static String eventToBeHandledName(String workerName) {
+        return workerName + EVENT_TO_BE_HANDLED;
+    }
+
 }

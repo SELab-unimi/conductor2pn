@@ -1,0 +1,40 @@
+{
+  "name": "workflow_simple",
+  "description": "workflow with two simple tasks",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "task_1",
+      "taskReferenceName": "task_1",
+      "inputParameters": {
+        "mod": "${workflow.input.mod}",
+        "oddEven": "${workflow.input.oddEven}"
+      },
+      "type": "SIMPLE"
+    },
+    {
+      "name": "event_0",
+      "taskReferenceName": "event_0",
+      "inputParameters": {
+        "mod": "${workflow.input.mod}",
+        "oddEven": "${workflow.input.oddEven}"
+      },
+      "type": "EVENT",
+      "sink": "conductor"
+    },
+    {
+      "name": "task_2",
+      "taskReferenceName": "task_2",
+      "inputParameters": {
+        "mod": "${workflow.input.mod}",
+        "oddEven": "${workflow.input.oddEven}"
+      },
+      "type": "SIMPLE"
+    }
+  ],
+  "outputParameters": {
+    "statues": "${get_es_1.output..status}",
+    "workflowIds": "${get_es_1.output..workflowId}"
+  },
+  "schemaVersion": 1
+}
