@@ -14,9 +14,14 @@ public abstract class WorkflowGenerator {
     protected static final String TASKS = "tasks";
     protected static final String NAME = "name";
     protected static final String FORK_TASKS = "forkTasks";
+    protected static final String DYNAMIC_TASKS = "dynamicTasks";
 
     // PN elements naming
     protected static final String START_TASK = "start_";
+    protected static final String START_DYNAMIC_TASK = "dynamic_start_";
+    protected static final String END_DYNAMIC_TASK = "dynamic_end_";
+    protected static final String DYNAMIC_TASK_ENDED = "_dynamicTask_ended";
+    protected static final String DYNAMIC_TASK_RUNNING = "_dynamicTask_running";
     protected static final String START_EVENT = "_generation";
     protected static final String EVENT_GENERATED = "_generated";
     protected static final String EVENT_TO_BE_HANDLED = "_to_be_handled";
@@ -46,7 +51,7 @@ public abstract class WorkflowGenerator {
                     outputTasks = joinTask(outputTasks, currentElement, net);
                     break;
                 case "DYNAMIC":
-                    //createWorkflowTimeoutWorker(workerElement, net);
+                    outputTasks = dynamicTask(outputTasks, currentElement, net);
                     break;
                 case "DECISION":
                     //createWorkflowTimeoutWorker(workerElement, net);
@@ -76,6 +81,8 @@ public abstract class WorkflowGenerator {
 
     protected abstract List<String> forkTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
+    protected abstract List<String> dynamicTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
+
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
     }
@@ -98,6 +105,22 @@ public abstract class WorkflowGenerator {
 
     protected static String joinTransitionName(String workerName) {
         return workerName + JOIN;
+    }
+
+    protected static String dynamicTaskStartTransitionName(String workerName) {
+        return START_DYNAMIC_TASK + workerName;
+    }
+
+    protected static String dynamicTaskEndTransitionName(String workerName) {
+        return END_DYNAMIC_TASK + workerName;
+    }
+
+    protected static String dynamicTaskEndPlaceName(String workerName) {
+        return workerName + DYNAMIC_TASK_ENDED;
+    }
+
+    protected static String dynamicTaskRunningPlaceName(String workerName) {
+        return workerName + DYNAMIC_TASK_RUNNING;
     }
 
 }

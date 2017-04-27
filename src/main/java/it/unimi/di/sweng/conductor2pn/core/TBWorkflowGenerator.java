@@ -138,4 +138,47 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         result.add(joinTransition.getName());
         return result;
     }
+
+    @Override
+    protected List<String> dynamicTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
+        String dynamicName = currentElement.getAsJsonObject().get(NAME).getAsString();
+        String[] dynamicTasks = currentElement.getAsJsonObject().get(DYNAMIC_TASKS).getAsString().split(",");
+
+        List<Place> inputPlaces = new ArrayList<>();
+        for(String element: inputElements) {
+            Place p = net.getPlace(element);
+            if(p != null)
+                inputPlaces.add(p);
+        }
+
+        if(inputPlaces.isEmpty())
+            throw new IllegalArgumentException();
+
+        Place dynamicTaskRunningPlace = new Place(dynamicTaskRunningPlaceName(dynamicName));
+        Place dynamicTaskEndPlace = new Place(dynamicTaskEndPlaceName(dynamicName));
+        net.addNode(dynamicTaskEndPlace);
+        net.addNode(dynamicTaskRunningPlace);
+
+        for(String task: dynamicTasks) {
+            Transition dynamicTaskStartTransition = new Transition(dynamicTaskStartTransitionName(task),
+                    Transition.ENAB, Transition.ENAB + "+D",false);
+            Transition dynamicTaskEndTransition = new Transition(dynamicTaskEndTransitionName(task),
+                    Transition.ENAB, Transition.ENAB,false);
+            net.addNode(dynamicTaskStartTransition);
+            net.addNode(dynamicTaskEndTransition);
+            net.addArc(new Arc(dynamicTaskStartTransition, net.getPlace(WorkerGenerator.schedulePlaceName(task))));
+            net.addArc(new Arc(dynamicTaskStartTransition, dynamicTaskRunningPlace));
+            for(Place p: inputPlaces)
+                net.addArc(new Arc(p, dynamicTaskStartTransition));
+            net.addArc(new Arc(net.getPlace(WorkerGenerator.completePlaceName(task)), dynamicTaskEndTransition));
+            net.addArc(new Arc(dynamicTaskRunningPlace, dynamicTaskEndTransition));
+            net.addArc(new Arc(dynamicTaskEndTransition, dynamicTaskEndPlace));
+
+            // TODO time_out place connections
+        }
+
+        List<String> result = new ArrayList<>();
+        result.add(dynamicTaskEndPlace.getName());
+        return result;
+    }
 }
