@@ -154,10 +154,10 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         if(inputPlaces.isEmpty())
             throw new IllegalArgumentException();
 
-        Place dynamicTaskRunningPlace = new Place(dynamicTaskRunningPlaceName(dynamicName));
+        //Place dynamicTaskRunningPlace = new Place(dynamicTaskRunningPlaceName(dynamicName)); // TODO flow_state to avoid side-effect non-determinism
         Place dynamicTaskEndPlace = new Place(dynamicTaskEndPlaceName(dynamicName));
         net.addNode(dynamicTaskEndPlace);
-        net.addNode(dynamicTaskRunningPlace);
+        //net.addNode(dynamicTaskRunningPlace);
 
         for(String task: dynamicTasks) {
             Transition dynamicTaskStartTransition = new Transition(dynamicTaskStartTransitionName(task),
@@ -167,11 +167,11 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
             net.addNode(dynamicTaskStartTransition);
             net.addNode(dynamicTaskEndTransition);
             net.addArc(new Arc(dynamicTaskStartTransition, net.getPlace(WorkerGenerator.schedulePlaceName(task))));
-            net.addArc(new Arc(dynamicTaskStartTransition, dynamicTaskRunningPlace));
+            //net.addArc(new Arc(dynamicTaskStartTransition, dynamicTaskRunningPlace));
             for(Place p: inputPlaces)
                 net.addArc(new Arc(p, dynamicTaskStartTransition));
             net.addArc(new Arc(net.getPlace(WorkerGenerator.completePlaceName(task)), dynamicTaskEndTransition));
-            net.addArc(new Arc(dynamicTaskRunningPlace, dynamicTaskEndTransition));
+            //net.addArc(new Arc(dynamicTaskRunningPlace, dynamicTaskEndTransition));
             net.addArc(new Arc(dynamicTaskEndTransition, dynamicTaskEndPlace));
 
             // TODO time_out place connections

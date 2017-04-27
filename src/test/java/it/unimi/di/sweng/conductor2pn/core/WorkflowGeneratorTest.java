@@ -87,14 +87,13 @@ public class WorkflowGeneratorTest {
         assertNotNull(conductor2PnEngine);
         TBNet model = conductor2PnEngine.getModel();
 
-        assertEquals(11, model.getPlaces().size());
+        assertEquals(10, model.getPlaces().size());
         assertEquals(11, model.getTransitions().size());
 
         assertNotNull(model.getTransition("dynamic_start_task_1"));
         assertNotNull(model.getTransition("dynamic_start_task_2"));
         assertNotNull(model.getTransition("dynamic_end_task_1"));
         assertNotNull(model.getTransition("dynamic_end_task_2"));
-        assertNotNull(model.getPlace("dynamic_task_dynamicTask_running"));
         assertNotNull(model.getPlace("dynamic_task_dynamicTask_ended"));
     }
 }
