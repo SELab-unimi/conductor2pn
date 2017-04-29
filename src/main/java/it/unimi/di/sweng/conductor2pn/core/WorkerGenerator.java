@@ -35,22 +35,22 @@ public abstract class WorkerGenerator {
         final String policy = JsonWorker.get(TIMEOUT_POLICY).getAsString();
         switch(policy){
             case "RETRY":
-                createRetryWorker(workerElement, net);
+                retryWorker(workerElement, net);
                 break;
             case "ALERT_ONLY":
-                createAlertOnlyWorker(workerElement, net);
+                alertOnlyWorker(workerElement, net);
                 break;
             case "TIME_OUT_WF":
-                createWorkflowTimeoutWorker(workerElement, net);
+                workflowTimeoutWorker(workerElement, net);
                 break;
             default:
                 throw new IllegalArgumentException();
         }
     }
 
-    protected abstract void createAlertOnlyWorker(JsonElement element, TBNet net);
-    protected abstract void createWorkflowTimeoutWorker(JsonElement element, TBNet net);
-    protected abstract void createRetryWorker(JsonElement element, TBNet net);
+    protected abstract void alertOnlyWorker(JsonElement element, TBNet net);
+    protected abstract void workflowTimeoutWorker(JsonElement element, TBNet net);
+    protected abstract void retryWorker(JsonElement element, TBNet net);
 
     protected static String schedulePlaceName(String workerName) {
         return workerName + SCHEDULE;

@@ -12,13 +12,13 @@ public class TBWorkerGenerator extends WorkerGenerator{
     private Place workerAbortedPlace = null;
 
     @Override
-    protected void createAlertOnlyWorker(JsonElement workerElement, TBNet net) {
+    protected void alertOnlyWorker(JsonElement workerElement, TBNet net) {
         JsonObject JsonWorker = workerElement.getAsJsonObject();
         basicLifecycle(JsonWorker, net, false);
     }
 
     @Override
-    protected void createWorkflowTimeoutWorker(JsonElement workerElement, TBNet net) {
+    protected void workflowTimeoutWorker(JsonElement workerElement, TBNet net) {
         globalTimeout = true;
         workerAbortedPlace = new Place(WORKER_ABORTED);
         net.addNode(workerAbortedPlace);
@@ -35,7 +35,7 @@ public class TBWorkerGenerator extends WorkerGenerator{
     }
 
     @Override
-    protected void createRetryWorker(JsonElement workerElement, TBNet net) {
+    protected void retryWorker(JsonElement workerElement, TBNet net) {
         JsonObject JsonWorker = workerElement.getAsJsonObject();
         basicLifecycle(JsonWorker, net, false);
 
