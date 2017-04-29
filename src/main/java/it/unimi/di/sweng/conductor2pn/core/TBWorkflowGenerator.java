@@ -2,10 +2,12 @@ package it.unimi.di.sweng.conductor2pn.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import it.unimi.di.sweng.conductor2pn.data.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TBWorkflowGenerator extends WorkflowGenerator {
 
@@ -15,16 +17,8 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         Place schedulePlace = net.getPlace(WorkerGenerator.schedulePlaceName(workerName));
 
         if(!inputElements.isEmpty()) {
-            List<Place> inputPlaces = new ArrayList<>();
-            List<Transition> inputTransitions = new ArrayList<>();
-            for(String element: inputElements) {
-                Place p = net.getPlace(element);
-                Transition t = net.getTransition(element);
-                if (p != null)
-                    inputPlaces.add(p);
-                else if (t != null)
-                    inputTransitions.add(t);
-            }
+            List<Place> inputPlaces = getPlaces(inputElements, net);
+            List<Transition> inputTransitions = getTransitions(inputElements, net);
 
             if(!inputPlaces.isEmpty() && !inputTransitions.isEmpty())
                 throw new IllegalArgumentException();
@@ -56,13 +50,7 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
     protected List<String> eventTask(List<String> inputElements, JsonElement workerElement, TBNet net) {
         String eventName = workerElement.getAsJsonObject().get(NAME).getAsString();
 
-        List<Place> inputPlaces = new ArrayList<>();
-        for(String element: inputElements) {
-            Place p = net.getPlace(element);
-            if(p != null)
-                inputPlaces.add(p);
-        }
-
+        List<Place> inputPlaces = getPlaces(inputElements, net);
         if(inputPlaces.isEmpty())
             throw new IllegalArgumentException();
 
@@ -89,13 +77,8 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
     protected List<String> forkTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
         String forkName = currentElement.getAsJsonObject().get(NAME).getAsString();
         JsonArray forkTasks = currentElement.getAsJsonObject().get(FORK_TASKS).getAsJsonArray();
-        List<Place> inputPlaces = new ArrayList<>();
-        for(String element: inputElements) {
-            Place p = net.getPlace(element);
-            if(p != null)
-                inputPlaces.add(p);
-        }
 
+        List<Place> inputPlaces = getPlaces(inputElements, net);
         if(inputPlaces.isEmpty())
             throw new IllegalArgumentException();
 
@@ -117,13 +100,8 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
     @Override
     protected List<String> joinTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
         String joinName = currentElement.getAsJsonObject().get(NAME).getAsString();
-        List<Place> inputPlaces = new ArrayList<>();
-        for(String element: inputElements) {
-            Place p = net.getPlace(element);
-            if(p != null)
-                inputPlaces.add(p);
-        }
 
+        List<Place> inputPlaces = getPlaces(inputElements, net);
         if(inputPlaces.isEmpty())
             throw new IllegalArgumentException();
 
@@ -144,13 +122,7 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         String dynamicName = currentElement.getAsJsonObject().get(NAME).getAsString();
         String[] dynamicTasks = currentElement.getAsJsonObject().get(DYNAMIC_TASKS).getAsString().split(",");
 
-        List<Place> inputPlaces = new ArrayList<>();
-        for(String element: inputElements) {
-            Place p = net.getPlace(element);
-            if(p != null)
-                inputPlaces.add(p);
-        }
-
+        List<Place> inputPlaces = getPlaces(inputElements, net);
         if(inputPlaces.isEmpty())
             throw new IllegalArgumentException();
 
@@ -179,6 +151,68 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
 
         List<String> result = new ArrayList<>();
         result.add(dynamicTaskEndPlace.getName());
+        return result;
+    }
+
+    @Override
+    protected List<String> decisionTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
+        String taskName = currentElement.getAsJsonObject().get(NAME).getAsString();
+
+        List<Place> inputPlaces = getPlaces(inputElements, net);
+        List<Transition> inputTransitions = getTransitions(inputElements, net);
+
+        JsonObject decisionCases = currentElement.getAsJsonObject().get(DECISION_CASES).getAsJsonObject();
+        List<String> outputElements = new ArrayList<>();
+        for(Map.Entry<String, JsonElement> entry: decisionCases.entrySet()) {
+            Transition caseTransition = new Transition(caseTransitionName(entry.getKey()),
+                    Transition.ENAB, Transition.ENAB + "+C",false);
+            net.addNode(caseTransition);
+            for(Place p: inputPlaces)
+               net.addArc(new Arc(p, caseTransition));
+            for(Transition t: inputTransitions) {
+                Place p = new Place(toCaseTransitionName(t.getName()));
+                net.addNode(p);
+                net.addArc(new Arc(p, caseTransition));
+            }
+            List<String> input = new ArrayList<>();
+            input.add(caseTransition.getName());
+            outputElements.addAll(createWorkflow(input, entry.getValue(), net));
+        }
+        Place decisionEndPlace = new Place(decisionEndPlaceName(taskName));
+        net.addNode(decisionEndPlace);
+
+        for(Transition t: getTransitions(outputElements, net)) {
+            net.addArc(new Arc(t, decisionEndPlace));
+        }
+        for(Place p: getPlaces(outputElements, net)) {
+            Transition toEndPlace = new Transition(toDecisionEndPlaceTransitionName(p.getName()),
+                    Transition.ENAB, Transition.ENAB,false);
+            net.addNode(toEndPlace);
+            net.addArc(new Arc(toEndPlace, decisionEndPlace));
+        }
+
+        List<String> result = new ArrayList<>();
+        result.add(decisionEndPlace.getName());
+        return result;
+    }
+
+    private List<Place> getPlaces(List<String> elements, TBNet net) {
+        List<Place> result = new ArrayList<>();
+        for(String element: elements) {
+            Place p = net.getPlace(element);
+            if(p != null)
+                result.add(p);
+        }
+        return result;
+    }
+
+    private List<Transition> getTransitions(List<String> elements, TBNet net) {
+        List<Transition> result = new ArrayList<>();
+        for(String element: elements) {
+            Transition t = net.getTransition(element);
+            if(t != null)
+                result.add(t);
+        }
         return result;
     }
 }

@@ -15,6 +15,7 @@ public abstract class WorkflowGenerator {
     protected static final String NAME = "name";
     protected static final String FORK_TASKS = "forkTasks";
     protected static final String DYNAMIC_TASKS = "dynamicTasks";
+    protected static final String DECISION_CASES = "decisionCases";
 
     // PN elements naming
     protected static final String START_TASK = "start_";
@@ -27,25 +28,29 @@ public abstract class WorkflowGenerator {
     protected static final String EVENT_TO_BE_HANDLED = "_to_be_handled";
     protected static final String FORK = "_fork";
     protected static final String JOIN = "_join";
+    protected static final String CASE = "_case";
+    protected static final String TO_CASE = "_to_case";
+    protected static final String DECISION_END = "_decision_end";
+    protected static final String TO_DECISION_END = "_to_decision_end";
 
     public void createWorkflow(JsonElement workflowElement, TBNet net) {
         createWorkflow(new ArrayList<>(), workflowElement.getAsJsonObject().get(TASKS), net);
     }
 
     protected List<String> createWorkflow(List<String> inputElements, JsonElement workflowElement, TBNet net) {
-        List<String> outputTasks = null;
+        List<String> outputTasks = inputElements;
         JsonArray JsonWorkflow = workflowElement.getAsJsonArray();
         for(JsonElement currentElement: JsonWorkflow) {
             final String type = currentElement.getAsJsonObject().get(TYPE).getAsString();
             switch(type){
                 case "SIMPLE":
-                    outputTasks = simpleTask(inputElements, currentElement, net);
+                    outputTasks = simpleTask(outputTasks, currentElement, net);
                     break;
                 case "EVENT":
-                    outputTasks = eventTask(inputElements, currentElement, net);
+                    outputTasks = eventTask(outputTasks, currentElement, net);
                     break;
                 case "FORK_JOIN":
-                    outputTasks = forkTask(inputElements, currentElement, net);
+                    outputTasks = forkTask(outputTasks, currentElement, net);
                     break;
                 case "JOIN":
                     outputTasks = joinTask(outputTasks, currentElement, net);
@@ -54,7 +59,7 @@ public abstract class WorkflowGenerator {
                     outputTasks = dynamicTask(outputTasks, currentElement, net);
                     break;
                 case "DECISION":
-                    //createWorkflowTimeoutWorker(workerElement, net);
+                    outputTasks = decisionTask(outputTasks, currentElement, net);
                     break;
                 case "FORK_JOIN_DYNAMIC":
                     //createWorkflowTimeoutWorker(workerElement, net);
@@ -82,6 +87,8 @@ public abstract class WorkflowGenerator {
     protected abstract List<String> forkTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected abstract List<String> dynamicTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
+
+    protected abstract List<String> decisionTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
@@ -123,4 +130,19 @@ public abstract class WorkflowGenerator {
         return workerName + DYNAMIC_TASK_RUNNING;
     }
 
+    protected static String caseTransitionName(String workerName) {
+        return workerName + CASE;
+    }
+
+    protected static String toCaseTransitionName(String workerName) {
+        return workerName + TO_CASE;
+    }
+
+    protected static String decisionEndPlaceName(String workerName) {
+        return workerName + DECISION_END;
+    }
+
+    protected static String toDecisionEndPlaceTransitionName(String workerName) {
+        return workerName + TO_DECISION_END;
+    }
 }

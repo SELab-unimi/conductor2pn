@@ -96,4 +96,27 @@ public class WorkflowGeneratorTest {
         assertNotNull(model.getTransition("dynamic_end_task_2"));
         assertNotNull(model.getPlace("dynamic_task_dynamicTask_ended"));
     }
+
+    @Test
+    public void decisionTaskWorkflowTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/workers_mix_2.json")
+                .setWorkflowPath("src/main/resources/workflow_decision.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .setWorkflowGenerator(new TBWorkflowGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(18, model.getPlaces().size());
+        assertEquals(18, model.getTransitions().size());
+
+        assertNotNull(model.getTransition("Show_case"));
+        assertNotNull(model.getTransition("Movie_case"));
+        assertNotNull(model.getTransition("task_2_complete_to_decision_end"));
+        assertNotNull(model.getTransition("task_3_complete_to_decision_end"));
+        assertNotNull(model.getTransition("start_task_2"));
+        assertNotNull(model.getPlace("decide_task_decision_end"));
+    }
 }

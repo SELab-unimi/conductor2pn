@@ -1,0 +1,59 @@
+{
+  "name": "workflow_decision",
+  "description": "workflow with decision system task",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "task_0",
+      "taskReferenceName": "ga",
+      "inputParameters": {
+        "movieId": "${workflow.input.movieId}"
+      },
+      "type": "SIMPLE"
+    },
+    {
+      "name": "decide_task",
+      "taskReferenceName": "decide1",
+      "inputParameters": {
+        "case_value_param": "${workflow.input.movieType}"
+      },
+      "type": "DECISION",
+      "caseValueParam": "case_value_param",
+      "decisionCases": {
+        "Show": [
+          {
+            "name": "task_1",
+            "taskReferenceName": "se1",
+            "inputParameters": {
+              "movieId": "${workflow.input.movieId}"
+            },
+            "type": "SIMPLE"
+          },
+          {
+            "name": "task_2",
+            "taskReferenceName": "ga",
+            "inputParameters": {
+              "movieId": "${workflow.input.movieId}"
+            },
+            "type": "SIMPLE"
+          }
+        ],
+        "Movie": [
+          {
+            "name": "task_3",
+            "taskReferenceName": "sm",
+            "inputParameters": {
+              "movieId": "${workflow.input.movieId}"
+            },
+            "type": "SIMPLE"
+          }
+        ]
+      }
+    }
+  ],
+  "outputParameters": {
+    "statues": "${get_es_1.output..status}",
+    "workflowIds": "${get_es_1.output..workflowId}"
+  },
+  "schemaVersion": 1
+}
