@@ -120,7 +120,7 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
     @Override
     protected List<String> dynamicTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
         String dynamicName = currentElement.getAsJsonObject().get(NAME).getAsString();
-        String[] dynamicTasks = currentElement.getAsJsonObject().get(DYNAMIC_TASKS).getAsString().split(",");
+        JsonArray dynamicTasks = currentElement.getAsJsonObject().get(DYNAMIC_TASKS).getAsJsonArray();
 
         List<Place> inputPlaces = getPlaces(inputElements, net);
         if(inputPlaces.isEmpty())
@@ -131,18 +131,19 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         net.addNode(dynamicTaskEndPlace);
         //net.addNode(dynamicTaskRunningPlace);
 
-        for(String task: dynamicTasks) {
-            Transition dynamicTaskStartTransition = new Transition(dynamicTaskStartTransitionName(task),
+        for(JsonElement task: dynamicTasks) {
+            String taskName = task.getAsString();
+            Transition dynamicTaskStartTransition = new Transition(dynamicTaskStartTransitionName(taskName),
                     Transition.ENAB, Transition.ENAB + "+D",false);
-            Transition dynamicTaskEndTransition = new Transition(dynamicTaskEndTransitionName(task),
+            Transition dynamicTaskEndTransition = new Transition(dynamicTaskEndTransitionName(taskName),
                     Transition.ENAB, Transition.ENAB,false);
             net.addNode(dynamicTaskStartTransition);
             net.addNode(dynamicTaskEndTransition);
-            net.addArc(new Arc(dynamicTaskStartTransition, net.getPlace(WorkerGenerator.schedulePlaceName(task))));
+            net.addArc(new Arc(dynamicTaskStartTransition, net.getPlace(WorkerGenerator.schedulePlaceName(taskName))));
             //net.addArc(new Arc(dynamicTaskStartTransition, dynamicTaskRunningPlace));
             for(Place p: inputPlaces)
                 net.addArc(new Arc(p, dynamicTaskStartTransition));
-            net.addArc(new Arc(net.getPlace(WorkerGenerator.completePlaceName(task)), dynamicTaskEndTransition));
+            net.addArc(new Arc(net.getPlace(WorkerGenerator.completePlaceName(taskName)), dynamicTaskEndTransition));
             //net.addArc(new Arc(dynamicTaskRunningPlace, dynamicTaskEndTransition));
             net.addArc(new Arc(dynamicTaskEndTransition, dynamicTaskEndPlace));
 
