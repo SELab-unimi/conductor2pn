@@ -15,7 +15,9 @@ public abstract class WorkflowGenerator {
     protected static final String NAME = "name";
     protected static final String FORK_TASKS = "forkTasks";
     protected static final String DYNAMIC_TASKS = "dynamicTasks";
+    protected static final String DYNAMIC_FORK_TASKS = "dynamicForkTasks";
     protected static final String DECISION_CASES = "decisionCases";
+    protected static final String DYNAMIC = "dynamic";
 
     // PN elements naming
     protected static final String START_TASK = "start_";
@@ -32,6 +34,17 @@ public abstract class WorkflowGenerator {
     protected static final String TO_CASE = "_to_case";
     protected static final String DECISION_END = "_decision_end";
     protected static final String TO_DECISION_END = "_to_decision_end";
+    protected static final String START_DYNAMIC_FORK = "dynamic_fork_start_";
+    protected static final String TO_DYNAMIC_FORK = "_fork";
+    protected static final String DYNAMIC_CHOICE = "_dynamic_choice";
+    protected static final String CHOOSE_CONTINUE = "_choose_continue";
+    protected static final String CHOOSE_STOP = "_choose_stop";
+    protected static final String ACTIVE_TASKS = "_active_tasks";
+    protected static final String ACTIVE_TASK_DONE = "_active_task_done";
+    protected static final String DYNAMIC_FORK_END = "_dynamic_fork_end";
+    protected static final String TO_ACTIVE_TASK_DONE = "_to_active_task_done";
+    protected static final String DYNAMIC_JOIN = "_dynamic_join";
+    protected static final String DYNAMIC_TASK_COMPLETE = "_dynamic_task_complete";
 
     public void createWorkflow(JsonElement workflowElement, TBNet net) {
         createWorkflow(new ArrayList<>(), workflowElement.getAsJsonObject().get(TASKS), net);
@@ -62,7 +75,7 @@ public abstract class WorkflowGenerator {
                     outputTasks = decisionTask(outputTasks, currentElement, net);
                     break;
                 case "FORK_JOIN_DYNAMIC":
-                    //createWorkflowTimeoutWorker(workerElement, net);
+                    outputTasks = dynamicForkTask(outputTasks, currentElement, net);
                     break;
                 case "HTTP":
                     //createWorkflowTimeoutWorker(workerElement, net);
@@ -89,6 +102,8 @@ public abstract class WorkflowGenerator {
     protected abstract List<String> dynamicTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected abstract List<String> decisionTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
+
+    protected abstract List<String> dynamicForkTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
@@ -144,5 +159,49 @@ public abstract class WorkflowGenerator {
 
     protected static String toDecisionEndPlaceTransitionName(String workerName) {
         return workerName + TO_DECISION_END;
+    }
+
+    protected static String startDynamicForkPlaceName(String workerName) {
+        return START_DYNAMIC_FORK + workerName;
+    }
+
+    protected static String toDynamicForkTransitionName(String workerName) {
+        return workerName + TO_DYNAMIC_FORK;
+    }
+
+    protected static String dynamicChoicePlaceName(String workerName) {
+        return workerName + DYNAMIC_CHOICE;
+    }
+
+    protected static String chooseAndContinueTransitionName(String workerName) {
+        return workerName + CHOOSE_CONTINUE;
+    }
+
+    protected static String chooseAndStopTransitionName(String workerName) {
+        return workerName + CHOOSE_STOP;
+    }
+
+    protected static String dynamicForkActiveTasksPlaceName(String workerName) {
+        return workerName + ACTIVE_TASKS;
+    }
+
+    protected static String dynamicForkActiveTaskDonePlaceName(String workerName) {
+        return workerName + ACTIVE_TASK_DONE;
+    }
+
+    protected static String dynamicForkEndPlaceName(String workerName) {
+        return workerName + DYNAMIC_FORK_END;
+    }
+
+    protected static String toActiveTaskDoneTransitionName(String workerName) {
+        return workerName + TO_ACTIVE_TASK_DONE;
+    }
+
+    protected static String dynamicJoinTransitionName(String workerName) {
+        return workerName + DYNAMIC_JOIN;
+    }
+
+    protected static String completeTaskTransitionName(String workerName) {
+        return workerName + DYNAMIC_TASK_COMPLETE;
     }
 }

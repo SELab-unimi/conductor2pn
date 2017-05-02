@@ -99,17 +99,51 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
 
     @Override
     protected List<String> joinTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
-        String joinName = currentElement.getAsJsonObject().get(NAME).getAsString();
+        String taskName = currentElement.getAsJsonObject().get(NAME).getAsString();
 
-        List<Place> inputPlaces = getPlaces(inputElements, net);
-        if(inputPlaces.isEmpty())
-            throw new IllegalArgumentException();
+        Transition joinTransition = null;
+        if(!taskName.contains(DYNAMIC)) {
+            List<Place> inputPlaces = getPlaces(inputElements, net);
+            if (inputPlaces.isEmpty())
+                throw new IllegalArgumentException();
 
-        Transition joinTransition = new Transition(joinTransitionName(joinName),
-                Transition.ENAB, Transition.ENAB + "+J",false);
-        net.addNode(joinTransition);
-        for(Place inputPlace: inputPlaces) {
-            net.addArc(new Arc(inputPlace, joinTransition));
+            joinTransition = new Transition(joinTransitionName(taskName),
+                    Transition.ENAB, Transition.ENAB + "+J", false);
+            net.addNode(joinTransition);
+            for (Place inputPlace : inputPlaces) {
+                net.addArc(new Arc(inputPlace, joinTransition));
+            }
+        }
+        else {
+            Place activeTaskDone = new Place(dynamicForkActiveTaskDonePlaceName(taskName));
+            net.addNode(activeTaskDone);
+
+            Place activeTasks = null;
+            List<Place> inputPlaces = getPlaces(inputElements, net);
+            for (Place p: inputPlaces)
+                if(p.getName().contains(ACTIVE_TASKS))
+                    activeTasks = p;
+            for (Place p: inputPlaces)
+                if(!p.equals(activeTasks)) {
+                    Transition completeTaskTransition = new Transition(completeTaskTransitionName(p.getName()),
+                            Transition.ENAB, Transition.ENAB,false);
+                    net.addNode(completeTaskTransition);
+                    net.addArc(new Arc(p, completeTaskTransition));
+                    net.addArc(new Arc(activeTasks, completeTaskTransition));
+                    net.addArc(new Arc(completeTaskTransition, activeTaskDone));
+                }
+
+            Transition completeTaskToDone = new Transition(toActiveTaskDoneTransitionName(activeTasks.getName()),
+                    Transition.ENAB, Transition.ENAB,false);
+            joinTransition = new Transition(dynamicJoinTransitionName(taskName),
+                    Transition.ENAB, Transition.ENAB + "+DJ",false);
+            net.addNode(completeTaskToDone);
+            net.addNode(joinTransition);
+
+            net.addArc(new Arc(activeTaskDone, joinTransition));
+            net.addArc(new Arc(activeTaskDone, completeTaskToDone));
+            net.addArc(new Arc(activeTasks, completeTaskToDone));
+            net.addArc(new Arc(completeTaskToDone, activeTasks));
         }
 
         List<String> result = new ArrayList<>();
@@ -194,6 +228,59 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
 
         List<String> result = new ArrayList<>();
         result.add(decisionEndPlace.getName());
+        return result;
+    }
+
+    @Override
+    protected List<String> dynamicForkTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
+        List<String> result = new ArrayList<>();
+        String taskName = currentElement.getAsJsonObject().get(NAME).getAsString();
+        List<Place> inputPlaces = getPlaces(inputElements, net);
+        List<Transition> inputTransitions = getTransitions(inputElements, net);
+
+        Place dynamicForkStart = new Place(startDynamicForkPlaceName(taskName));
+        Place activeTasks = new Place(dynamicForkActiveTasksPlaceName(taskName));
+        net.addNode(dynamicForkStart);
+        net.addNode(activeTasks);
+        result.add(activeTasks.getName());
+
+        for(Transition t: inputTransitions)
+            net.addArc(new Arc(t, dynamicForkStart));
+        if(!inputPlaces.isEmpty()) {
+            Transition inputPlacesToDynamicFork = new Transition(toDynamicForkTransitionName(taskName),
+                    Transition.ENAB, Transition.ENAB + "+DFS",false);
+            net.addNode(inputPlacesToDynamicFork);
+            net.addArc(new Arc(inputPlacesToDynamicFork, dynamicForkStart));
+            for(Place p: inputPlaces)
+                net.addArc(new Arc(p, inputPlacesToDynamicFork));
+        }
+
+        JsonArray dynamicForkTasks = currentElement.getAsJsonObject().get(DYNAMIC_FORK_TASKS).getAsJsonArray();
+        for(JsonElement task: dynamicForkTasks) {
+            Place dynamicChoice = new Place(dynamicChoicePlaceName(task.getAsString()));
+            dynamicChoice.putTokens(1, "TA");
+            net.addNode(dynamicChoice);
+            Transition chooseAndContinue = new Transition(chooseAndContinueTransitionName(task.getAsString()),
+                    Transition.ENAB, Transition.ENAB,false);
+            Transition chooseAndStop = new Transition(chooseAndStopTransitionName(task.getAsString()),
+                    Transition.ENAB, Transition.ENAB,false);
+            net.addNode(chooseAndContinue);
+            net.addNode(chooseAndStop);
+            net.addArc(new Arc(dynamicChoice, chooseAndContinue));
+            net.addArc(new Arc(dynamicChoice, chooseAndStop));
+            net.addArc(new Arc(dynamicForkStart, chooseAndContinue));
+            net.addArc(new Arc(chooseAndContinue, dynamicForkStart));
+            net.addArc(new Arc(dynamicForkStart, chooseAndStop));
+
+            Place schedulePlace = net.getPlace(WorkerGenerator.schedulePlaceName(task.getAsString()));
+            net.addArc(new Arc(chooseAndContinue, schedulePlace));
+            net.addArc(new Arc(chooseAndStop, schedulePlace));
+            net.addArc(new Arc(chooseAndContinue, activeTasks));
+            net.addArc(new Arc(chooseAndStop, activeTasks));
+
+            result.add(WorkerGenerator.completePlaceName(task.getAsString()));
+        }
+
         return result;
     }
 

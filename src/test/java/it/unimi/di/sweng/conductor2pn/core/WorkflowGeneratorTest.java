@@ -119,4 +119,37 @@ public class WorkflowGeneratorTest {
         assertNotNull(model.getTransition("start_task_2"));
         assertNotNull(model.getPlace("decide_task_decision_end"));
     }
+
+    @Test
+    public void dynamicForkTaskWorkflowTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/workers_mix_2.json")
+                .setWorkflowPath("src/main/resources/workflow_dynamic_fork_join.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .setWorkflowGenerator(new TBWorkflowGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(23, model.getPlaces().size());
+        assertEquals(25, model.getTransitions().size());
+
+        assertNotNull(model.getPlace("dynamic_fork_start_dynamic_fanout"));
+        assertNotNull(model.getPlace("task_1_dynamic_choice"));
+        assertNotNull(model.getPlace("task_2_dynamic_choice"));
+        assertNotNull(model.getPlace("task_3_dynamic_choice"));
+        assertNotNull(model.getPlace("dynamic_fanout_active_tasks"));
+        assertNotNull(model.getPlace("dynamic_join_active_task_done"));
+
+        assertNotNull(model.getTransition("dynamic_fanout_fork"));
+        assertNotNull(model.getTransition("task_1_choose_continue"));
+        assertNotNull(model.getTransition("task_1_choose_stop"));
+        assertNotNull(model.getTransition("task_2_choose_continue"));
+        assertNotNull(model.getTransition("task_2_choose_stop"));
+        assertNotNull(model.getTransition("task_3_choose_continue"));
+        assertNotNull(model.getTransition("task_3_choose_stop"));
+        assertNotNull(model.getTransition("dynamic_fanout_active_tasks_to_active_task_done"));
+        assertNotNull(model.getTransition("dynamic_join_dynamic_join"));
+    }
 }
