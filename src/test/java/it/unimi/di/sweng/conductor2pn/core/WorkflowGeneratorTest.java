@@ -152,4 +152,29 @@ public class WorkflowGeneratorTest {
         assertNotNull(model.getTransition("dynamic_fanout_active_tasks_to_active_task_done"));
         assertNotNull(model.getTransition("dynamic_join_dynamic_join"));
     }
+
+    @Test
+    public void httpTaskWorkflowTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/workers_mix.json")
+                .setWorkflowPath("src/main/resources/workflow_http.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .setWorkflowGenerator(new TBWorkflowGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(13, model.getPlaces().size());
+        assertEquals(11, model.getTransitions().size());
+
+        assertNotNull(model.getPlace("search_http_req"));
+        assertNotNull(model.getPlace("search_http_req_complete"));
+        assertNotNull(model.getPlace("search_http_req_failed"));
+
+        assertNotNull(model.getTransition("search_to_http_req"));
+        assertNotNull(model.getTransition("search_ok_status"));
+        assertNotNull(model.getTransition("search_error_status"));
+        assertNotNull(model.getTransition("search_http_req_timeout"));
+    }
 }

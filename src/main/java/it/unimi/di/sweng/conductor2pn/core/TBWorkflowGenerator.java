@@ -284,6 +284,68 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         return result;
     }
 
+    @Override
+    protected List<String> httpTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
+        String taskName = currentElement.getAsJsonObject().get(NAME).getAsString();
+
+        Place request = new Place(httpReqPlaceName(taskName));
+        Place complete = new Place(httpReqCompletePlaceName(taskName));
+        Place failed = new Place(httpReqFailedPlaceName(taskName));
+        net.addNode(request);
+        net.addNode(complete);
+        net.addNode(failed);
+
+        Transition toHttpReq = new Transition(toHttpReqTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+H",false);
+        Transition okStatus = new Transition(okStatusTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+" + Transition.INF,true);
+        Transition errorStatus = new Transition(errorStatusTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+" + Transition.INF,true);
+        Transition timeOut = new Transition(httpReqTimeOutTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+T",false);
+
+        net.addNode(toHttpReq);
+        net.addNode(okStatus);
+        net.addNode(errorStatus);
+        net.addNode(timeOut);
+        net.addArc(new Arc(toHttpReq, request));
+        net.addArc(new Arc(request, okStatus));
+        net.addArc(new Arc(request, errorStatus));
+        net.addArc(new Arc(request, timeOut));
+        net.addArc(new Arc(okStatus, complete));
+        net.addArc(new Arc(errorStatus, failed));
+        net.addArc(new Arc(timeOut, failed));
+
+        for(Place p: getPlaces(inputElements, net))
+            net.addArc(new Arc(p, toHttpReq));
+        List<Transition> inputTransitions = getTransitions(inputElements, net);
+        if(!inputTransitions.isEmpty()) {
+            for (Transition t : inputTransitions) {
+                Place bridge = new Place(toHttpReqPlaceName(t.getName()));
+                net.addNode(bridge);
+                net.addArc(new Arc(bridge, toHttpReq));
+            }
+        }
+
+        JsonArray internalTasks = currentElement.getAsJsonObject().get(TARGET_TASKS).getAsJsonArray();
+        if(internalTasks != null) {
+            for(JsonElement task: internalTasks) {
+                Place canReply = new Place(canReplayPlaceName(task.getAsString()));
+                net.addNode(canReply);
+                Transition s2p = net.getTransition(WorkerGenerator.s2pTransitionName(task.getAsString()));
+                net.addArc(new Arc(s2p, canReply));
+                for(NetNode node: net.getPostset(net.getPlace(WorkerGenerator.progressPlaceName(task.getAsString()))))
+                    net.addArc(new Arc(canReply, node));
+                net.addArc(new Arc(canReply, okStatus));
+                net.addArc(new Arc(canReply, errorStatus));
+            }
+        }
+
+        List<String> result = new ArrayList<>();
+        result.add(complete.getName());
+        return result;
+    }
+
     private List<Place> getPlaces(List<String> elements, TBNet net) {
         List<Place> result = new ArrayList<>();
         for(String element: elements) {
