@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.unimi.di.sweng.conductor2pn.data.TBNet;
+import org.apache.commons.cli.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -90,6 +91,40 @@ public class ConductorToPn {
             }
 
             return new ConductorToPn(model);
+        }
+    }
+
+    public static void main(String[] args) {
+        Options options = new Options();
+        options.addOption("w", "workers", true, "Worker tasks input file");
+        options.addOption("s", "systemTasks", true, "System tasks input file");
+        options.addOption("o", "output", true, "Output PNML file");
+        options.addOption("h", "help", false, "Print this message");
+
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine cmd = parser.parse(options, args);
+            if(cmd.hasOption("h") || !cmd.hasOption("w") || !cmd.hasOption("s") || !cmd.hasOption("o")) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("ConductorToPn [options]", options);
+            }
+            else {
+                ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                        .setWorkerTasksPath(options.getOption("workers").getValue())
+                        .setWorkflowPath(options.getOption("systemTasks").getValue())
+                        .setWorkerGenerator(new TBWorkerGenerator())
+                        .setWorkflowGenerator(new TBWorkflowGenerator())
+                        .build();
+
+                File outputFile = new File(options.getOption("output").getValue());
+                outputFile.createNewFile();
+
+                Writer writer = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream(outputFile, false)));
+                conductor2PnEngine.createOutputModel(writer);
+            }
+        } catch (ParseException | IOException e) {
+            e.printStackTrace();
         }
     }
 }
