@@ -4,20 +4,19 @@ This application converts a [Conductor](https://netflix.github.io/conductor/) wo
 
 ### How do I get set up? ###
 
-To build the application run
+To build the application run:
 ```
 #!shell
 gradle build
 ```
-This task generates a compressed executable jar file into the `build/distribution` directory.
+This task generates compressed executable binaries into the `build/distribution` directory.
 
-To try out the application, unzip the executables and run
+To try out the application, unpack the executables and run from the project directory:
 ```
 #!shell
-cd build/distribution/conductor2pn
-java -jar conductor2pn.jar \
-  -w '../../resources/main/workers_mix.json' \
-  -s '../../resources/main/workflow_wait.json' \
+java -jar build/distribution/conductor2pn/conductor2pn.jar \
+  -w 'build/resources/main/workers_mix.json' \
+  -s 'build/resources/main/workflow_wait.json' \
   -o 'wait_example.xml'
 ```
 
