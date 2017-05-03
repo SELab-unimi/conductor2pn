@@ -177,4 +177,32 @@ public class WorkflowGeneratorTest {
         assertNotNull(model.getTransition("search_error_status"));
         assertNotNull(model.getTransition("search_http_req_timeout"));
     }
+
+    @Test
+    public void waitTaskWorkflowTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/workers_mix.json")
+                .setWorkflowPath("src/main/resources/workflow_wait.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .setWorkflowGenerator(new TBWorkflowGenerator())
+                .build();
+
+        assertNotNull(conductor2PnEngine);
+        TBNet model = conductor2PnEngine.getModel();
+
+        assertEquals(13, model.getPlaces().size());
+        assertEquals(13, model.getTransitions().size());
+
+        assertNotNull(model.getPlace("wait_task_wait_in_progress"));
+        assertNotNull(model.getPlace("wait_task_wait_complete"));
+        assertNotNull(model.getPlace("wait_task_wait_failed"));
+        assertNotNull(model.getPlace("wait_task_external_event_generated"));
+
+        assertNotNull(model.getTransition("to_wait_task"));
+        assertNotNull(model.getTransition("wait_task_external_event"));
+        assertNotNull(model.getTransition("wait_task_to_wait_complete"));
+        assertNotNull(model.getTransition("wait_task_to_wait_failed"));
+        assertNotNull(model.getTransition("wait_task_to_wait_timeout"));
+        assertNotNull(model.getTransition("start_task_2"));
+    }
 }

@@ -19,6 +19,7 @@ public abstract class WorkflowGenerator {
     protected static final String DYNAMIC_FORK_TASKS = "dynamicForkTasks";
     protected static final String DECISION_CASES = "decisionCases";
     protected static final String DYNAMIC = "dynamic";
+    protected static final String WAIT = "wait";
 
     // PN elements naming
     protected static final String START_TASK = "start_";
@@ -55,6 +56,17 @@ public abstract class WorkflowGenerator {
     protected static final String HTTP_REQ_COMPLETE = "_http_req_complete";
     protected static final String HTTP_REQ_FAILED = "_http_req_failed";
     protected static final String CAN_REPLY = "_can_reply";
+    protected static final String WAIT_IN_PROGRESS = "_wait_in_progress";
+    protected static final String WAIT_COMPLETE = "_wait_complete";
+    protected static final String WAIT_FAILED = "_wait_failed";
+    protected static final String EXTERNAL_EVENT_GENERATED = "_external_event_generated";
+    protected static final String EXTERNAL_EVENT = "_external_event";
+    protected static final String TO_WAIT_COMPLETE = "_to_wait_complete";
+    protected static final String TO_WAIT_FAILED = "_to_wait_failed";
+    protected static final String TO_WAIT_TIMEOUT = "_to_wait_timeout";
+    protected static final String TO_WAIT_TASK = "_to_wait_task";
+    protected static final String TO = "to_";
+
 
     public void createWorkflow(JsonElement workflowElement, TBNet net) {
         createWorkflow(new ArrayList<>(), workflowElement.getAsJsonObject().get(TASKS), net);
@@ -91,7 +103,7 @@ public abstract class WorkflowGenerator {
                     outputTasks = httpTask(outputTasks, currentElement, net);
                     break;
                 case "WAIT":
-                    //createWorkflowTimeoutWorker(workerElement, net);
+                    outputTasks = waitTask(outputTasks, currentElement, net);
                     break;
                 default:
                     throw new IllegalArgumentException();
@@ -116,6 +128,8 @@ public abstract class WorkflowGenerator {
     protected abstract List<String> dynamicForkTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected abstract List<String> httpTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
+
+    protected abstract List<String> waitTask(List<String> inputElements, JsonElement workflowElement, TBNet net);
 
     protected static String startTaskTransitionName(String workerName) {
         return START_TASK + workerName;
@@ -252,4 +266,45 @@ public abstract class WorkflowGenerator {
     protected static String canReplayPlaceName(String workerName) {
         return workerName + CAN_REPLY;
     }
+
+    protected static String waitInProgressPlaceName(String workerName) {
+        return workerName + WAIT_IN_PROGRESS;
+    }
+
+    protected static String waitCompletePlaceName(String workerName) {
+        return workerName + WAIT_COMPLETE;
+    }
+
+    protected static String waitFailedPlaceName(String workerName) {
+        return workerName + WAIT_FAILED;
+    }
+
+    protected static String externalEventPlaceName(String workerName) {
+        return workerName + EXTERNAL_EVENT_GENERATED;
+    }
+
+    protected static String externalEventTransitionName(String workerName) {
+        return workerName + EXTERNAL_EVENT;
+    }
+
+    protected static String toWaitCompleteTransitionName(String workerName) {
+        return workerName + TO_WAIT_COMPLETE;
+    }
+
+    protected static String toWaitFailedTransitionName(String workerName) {
+        return workerName + TO_WAIT_FAILED;
+    }
+
+    protected static String toWaitTimeOutTransitionName(String workerName) {
+        return workerName + TO_WAIT_TIMEOUT;
+    }
+
+    protected static String toWaitTaskTransitionName(String workerName) {
+        return TO + workerName;
+    }
+
+    protected static String toWaitTaskPlaceName(String workerName) {
+        return workerName + TO_WAIT_TASK;
+    }
+
 }

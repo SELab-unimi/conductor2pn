@@ -1,0 +1,39 @@
+{
+  "name": "workflow_wait",
+  "description": "workflow with two simple tasks",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "task_1",
+      "taskReferenceName": "task_1",
+      "inputParameters": {
+        "mod": "${task_0.output.mod}",
+        "oddEven": "${task_0.output.oddEven}"
+      },
+      "type": "SIMPLE"
+    },
+    {
+      "name": "wait_task",
+      "taskReferenceName": "wait",
+      "inputParameters": {
+        "mod": "${task_0.output.mod}",
+        "oddEven": "${task_0.output.oddEven}"
+      },
+      "type": "WAIT"
+    },
+    {
+      "name": "task_2",
+      "taskReferenceName": "task_2",
+      "inputParameters": {
+        "mod": "${task_0.output.mod}",
+        "oddEven": "${task_0.output.oddEven}"
+      },
+      "type": "SIMPLE"
+    }
+  ],
+  "outputParameters": {
+    "statues": "${get_es_1.output..status}",
+    "workflowIds": "${get_es_1.output..workflowId}"
+  },
+  "schemaVersion": 1
+}

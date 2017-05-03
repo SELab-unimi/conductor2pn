@@ -346,6 +346,63 @@ public class TBWorkflowGenerator extends WorkflowGenerator {
         return result;
     }
 
+    @Override
+    protected List<String> waitTask(List<String> inputElements, JsonElement currentElement, TBNet net) {
+        String taskName = currentElement.getAsJsonObject().get(NAME).getAsString();
+
+        Place waitInProgress = new Place(waitInProgressPlaceName(taskName));
+        Place waitComplete = new Place(waitCompletePlaceName(taskName));
+        Place waitFailed = new Place(waitFailedPlaceName(taskName));
+        Place externalEvent = new Place(externalEventPlaceName(taskName));
+        Transition event = new Transition(externalEventTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+" + Transition.INF,true);
+        Transition toComplete = new Transition(toWaitCompleteTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+WC",true);
+        Transition toFailed = new Transition(toWaitFailedTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+WF",true);
+        Transition timeOut = new Transition(toWaitTimeOutTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+TW",false);
+
+        net.addNode(waitInProgress);
+        net.addNode(waitComplete);
+        net.addNode(waitFailed);
+        net.addNode(externalEvent);
+        net.addNode(event);
+        net.addNode(toComplete);
+        net.addNode(toFailed);
+        net.addNode(timeOut);
+        net.addArc(new Arc(event, externalEvent));
+        net.addArc(new Arc(externalEvent, toComplete));
+        net.addArc(new Arc(externalEvent, toFailed));
+        net.addArc(new Arc(waitInProgress, toComplete));
+        net.addArc(new Arc(waitInProgress, toFailed));
+        net.addArc(new Arc(waitInProgress, timeOut));
+        net.addArc(new Arc(toComplete, waitComplete));
+        net.addArc(new Arc(toFailed, waitFailed));
+        net.addArc(new Arc(timeOut, waitFailed));
+
+        Transition toWaitTask = new Transition(toWaitTaskTransitionName(taskName),
+                Transition.ENAB, Transition.ENAB + "+W",true);
+        net.addNode(toWaitTask);
+        net.addArc(new Arc(toWaitTask, waitInProgress));
+
+        for(Place p: getPlaces(inputElements, net))
+            net.addArc(new Arc(p, toWaitTask));
+        List<Transition> inputTransitions = getTransitions(inputElements, net);
+        if(!inputTransitions.isEmpty()) {
+            for(Transition t: inputTransitions) {
+                Place bridgePlace = new Place(toWaitTaskPlaceName(t.getName()));
+                net.addNode(bridgePlace);
+                net.addArc(new Arc(t, bridgePlace));
+                net.addArc(new Arc(bridgePlace, toWaitTask));
+            }
+        }
+
+        List<String> result = new ArrayList<>();
+        result.add(waitComplete.getName());
+        return result;
+    }
+
     private List<Place> getPlaces(List<String> elements, TBNet net) {
         List<Place> result = new ArrayList<>();
         for(String element: elements) {
