@@ -96,7 +96,7 @@ public class XMLOutputGenerator {
             appendElement(doc, transitionElement, MIN_TIME, t.getMinTime());
             appendElement(doc, transitionElement, MAX_TIME, t.getMaxTime());
             appendElement(doc, transitionElement, INFINITE_SERVER, FALSE);
-            appendElement(doc, transitionElement, PRIORITY, "1.0");
+            appendElement(doc, transitionElement, PRIORITY, "1");
 
             net.appendChild(transitionElement);
         }

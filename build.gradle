@@ -1,11 +1,22 @@
 apply plugin: 'java-library'
+apply plugin: 'java-library-distribution'
 
 repositories {
     jcenter()
 }
 
+distZip.shouldRunAfter(build)
+
 dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     testImplementation 'junit:junit:4.12'
     testImplementation 'com.github.stefanbirkner:system-rules:1.16.0'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'it.unimi.di.sweng.conductor2pn.core.ConductorToPn',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+    }
 }

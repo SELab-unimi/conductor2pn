@@ -110,13 +110,13 @@ public class ConductorToPn {
             }
             else {
                 ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
-                        .setWorkerTasksPath(options.getOption("workers").getValue())
-                        .setWorkflowPath(options.getOption("systemTasks").getValue())
+                        .setWorkerTasksPath(cmd.getOptionValue("w"))
+                        .setWorkflowPath(cmd.getOptionValue("s"))
                         .setWorkerGenerator(new TBWorkerGenerator())
                         .setWorkflowGenerator(new TBWorkflowGenerator())
                         .build();
 
-                File outputFile = new File(options.getOption("output").getValue());
+                File outputFile = new File(cmd.getOptionValue("o"));
                 outputFile.createNewFile();
 
                 Writer writer = new BufferedWriter(new OutputStreamWriter(
