@@ -9,12 +9,12 @@ To build the application run:
 #!shell
 gradle build
 ```
-This task generates compressed executable binaries into the `build/distribution` directory.
+This task generates compressed executable binaries into the `build/distributions` directory.
 
 To try out the application, unpack the executables and run from the project directory:
 ```
 #!shell
-java -jar build/distribution/conductor2pn/conductor2pn.jar \
+java -jar build/distributions/conductor2pn/conductor2pn.jar \
   -w 'build/resources/main/workers_mix.json' \
   -s 'build/resources/main/workflow_wait.json' \
   -o 'wait_example.xml'
