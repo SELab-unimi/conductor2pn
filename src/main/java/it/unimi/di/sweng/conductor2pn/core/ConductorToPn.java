@@ -7,6 +7,9 @@ import com.google.gson.JsonParser;
 import it.unimi.di.sweng.conductor2pn.data.TBNet;
 import org.apache.commons.cli.*;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.*;
@@ -95,6 +98,7 @@ public class ConductorToPn {
     }
 
     public static void main(String[] args) {
+        System.out.println("** Conductor2Pn **");
         Options options = new Options();
         options.addOption("w", "workers", true, "Worker tasks input file");
         options.addOption("s", "systemTasks", true, "System tasks input file");
@@ -109,6 +113,8 @@ public class ConductorToPn {
                 formatter.printHelp("ConductorToPn [options]", options);
             }
             else {
+                Long start = System.currentTimeMillis();
+                System.out.print("Engine initialization...");
                 ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
                         .setWorkerTasksPath(cmd.getOptionValue("w"))
                         .setWorkflowPath(cmd.getOptionValue("s"))
@@ -118,12 +124,22 @@ public class ConductorToPn {
 
                 File outputFile = new File(cmd.getOptionValue("o"));
                 outputFile.createNewFile();
+                System.out.println("Done.");
 
                 Writer writer = new BufferedWriter(new OutputStreamWriter(
                         new FileOutputStream(outputFile, false)));
+                System.out.print("Conversion...");
                 conductor2PnEngine.createOutputModel(writer);
+                System.out.println("Done.");
+
+                Long diffMilliseconds = System.currentTimeMillis() - start;
+                long diffSeconds = diffMilliseconds/1000;
+                Duration duration = DatatypeFactory.newInstance().newDuration(diffMilliseconds);
+                System.out.println("Output generated in: " +
+                        diffSeconds + "s" +
+                        (diffMilliseconds - diffSeconds*1000) + "ms.");
             }
-        } catch (ParseException | IOException e) {
+        } catch (ParseException | IOException | DatatypeConfigurationException e) {
             e.printStackTrace();
         }
     }
