@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.unimi.di.sweng.conductor2pn.data.TBNet;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.*;
 
 public class ConductorToPn {
@@ -21,7 +23,12 @@ public class ConductorToPn {
     }
 
     public void createOutputModel(Writer out) throws IOException {
-        out.write("TO DO");
+        XMLOutputGenerator xmlGenerator = new XMLOutputGenerator(model);
+        try {
+            xmlGenerator.generate(out);
+        } catch (ParserConfigurationException | TransformerException e) {
+            e.printStackTrace();
+        }
         out.flush();
         out.close();
     }

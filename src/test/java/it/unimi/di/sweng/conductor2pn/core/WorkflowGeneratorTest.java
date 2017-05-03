@@ -1,11 +1,14 @@
 package it.unimi.di.sweng.conductor2pn.core;
 
-import it.unimi.di.sweng.conductor2pn.data.Place;
 import it.unimi.di.sweng.conductor2pn.data.TBNet;
-import it.unimi.di.sweng.conductor2pn.data.Transition;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.rules.Timeout;
+
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import static org.junit.Assert.*;
 
@@ -14,6 +17,10 @@ public class WorkflowGeneratorTest {
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(2);
+
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+
 
     @Test
     public void simpleTaskWorkflowTest() {
@@ -204,5 +211,21 @@ public class WorkflowGeneratorTest {
         assertNotNull(model.getTransition("wait_task_to_wait_failed"));
         assertNotNull(model.getTransition("wait_task_to_wait_timeout"));
         assertNotNull(model.getTransition("start_task_2"));
+    }
+
+    @Test@Ignore
+    public void outputTest() {
+        ConductorToPn conductor2PnEngine = new ConductorToPn.ConductorToPnBuilder()
+                .setWorkerTasksPath("src/main/resources/workers_mix.json")
+                .setWorkflowPath("src/main/resources/workflow_wait.json")
+                .setWorkerGenerator(new TBWorkerGenerator())
+                .setWorkflowGenerator(new TBWorkflowGenerator())
+                .build();
+        try {
+            conductor2PnEngine.createOutputModel(new OutputStreamWriter(System.out));
+            assertTrue(systemOutRule.getLog().contains("pnml"));
+        } catch (IOException e) {
+            fail("Exception was thrown.");
+        }
     }
 }

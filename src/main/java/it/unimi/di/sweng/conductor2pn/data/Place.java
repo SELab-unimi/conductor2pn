@@ -38,6 +38,17 @@ public class Place extends NetNode{
 		    putToken(new Token(symbolicTimestamp));
 	}
 
+	public String getTokensAsString() {
+		StringBuilder builder = new StringBuilder();
+		int i = 0;
+		for(Token t: tokens) {
+			if(i++ > 0)
+				builder.append("; ");
+			builder.append(t.getSymbolicTime());
+		}
+		return builder.toString();
+	}
+
 	public boolean equals(Object obj){
 		if(!(obj.getClass().isInstance(this)))
 			return false;

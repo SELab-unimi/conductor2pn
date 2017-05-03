@@ -62,8 +62,12 @@ public class Transition extends NetNode {
 	}
 
 	public String toString(){
-		return "Transition "+this.getName()+": tmin="+this.minTime
-			+", tmax="+this.maxTime +", semantic="+(this.weak ? "WEAK" : "STRONG");
+		return "Transition " + this.getName() + ": tmin="+this.minTime +
+			", tmax=" + this.maxTime + ", semantic=" + getSemanticsAsString();
+	}
+
+	public String getSemanticsAsString() {
+		return weak ? "WEAK" : "STRONG";
 	}
 	
 }
