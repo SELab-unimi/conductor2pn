@@ -30,6 +30,10 @@ usage: ConductorToPn [options]
  -w,--workers <arg>       Worker tasks input file
 ```
 
+### License ###
+
+See the [LICENSE](LICENSE.txt) file for license rights and limitations (GNU GPLv3).
+
 ### Who do I talk to? ###
 
 * [Matteo Camilli](http://camilli.di.unimi.it): <matteo.camilli@unimi.it>
