@@ -1,5 +1,7 @@
 # CONDUCTOR TO PN #
 
+[![Build Status](https://travis-ci.org/SELab-unimi/conductor2pn.svg?branch=master)](https://travis-ci.org/SELab-unimi/conductor2pn)
+
 This application converts a [Conductor](https://netflix.github.io/conductor/) workflow blueprint into a TB net xml file.
 
 ### How do I get set up? ###
